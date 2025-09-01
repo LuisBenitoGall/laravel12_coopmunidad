@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Session;
+
+class ShareSessionData{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response{
+        Inertia::share([
+            'sessionData' => [
+                'currentCompany' => $request->session()->get('currentCompany'),
+                'companySettings' => $request->session()->get('companySettings'),
+                'currentCommunity' => $request->session()->get('currentCommunity'),
+                'communitySettings' => $request->session()->get('communitySettings'),
+                'companies' => $request->session()->get('companies'),
+                'communities' => $request->session()->get('communities'),
+                'locale' => Session::get('locale', config('app.locale'))
+            ],
+        ]);
+
+        return $next($request);
+    }
+}

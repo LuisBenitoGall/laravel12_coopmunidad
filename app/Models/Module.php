@@ -73,6 +73,7 @@ class Module extends Model{
         $m->label = strtolower($request->name);
         $m->color = $request->color;
         $m->icon = $request->icon;
+        $m->scope = $request->scope;
         $m->level = $request->level;
         //$m->explanation = $request->explanation;
         $m->status = $request->status? 1:'0';

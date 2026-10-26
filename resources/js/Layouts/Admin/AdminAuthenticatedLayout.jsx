@@ -5,8 +5,12 @@ import { useForm, usePage } from '@inertiajs/react';
 
 import Header from '../../Pages/Admin/Partials/Header';
 import Sidebar from '../../Pages/Admin/Partials/Sidebar';
+
+//Components
+import FlashMessage from "@/Components/FlashMessage";
 import ModalCompaniesSession from '@/Components/modals/ModalCompaniesSession';
 
+//Hooks
 import { useSweetAlert } from '@/Hooks/useSweetAlert';
 import { useTranslation } from '@/Hooks/useTranslation';
 
@@ -53,68 +57,77 @@ export default function AdminAuthenticated({ user, title, subtitle, actions = []
     }
   };
 
-  return (
-    <div className="h-screen flex text-gray-800">
-      {/* Sidebar */}
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        mobileOpen={mobileSidebarOpen}
-        onCloseMobile={() => setMobileSidebarOpen(false)}
-      />
+    return (
+        <div className="h-screen flex text-gray-800">
+            {/* Sidebar */}
+            <Sidebar
+                collapsed={sidebarCollapsed}
+                mobileOpen={mobileSidebarOpen}
+                onCloseMobile={() => setMobileSidebarOpen(false)}
+            />
 
-      {/* Área derecha */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header
-          title={title}
-          subtitle={subtitle}
-          user={user}
-          actions={actions}
-          companies={companies}
-          current_company={currentCompany}
-          onToggleSidebar={() => setSidebarCollapsed(v => !v)}
-          onOpenMobile={() => setMobileSidebarOpen(true)}
-        />
-
-        {/* Contenido con scroll independiente */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
-      </div>
-
-      {/* Modal selector de empresa */}
-      <ModalCompaniesSession
-        show={showModalCompaniesSession}
-        onClose={() => setShowModalCompaniesSession(false)}
-        onConfirm={selectCompanySubmit}
-        title={__('empresa_selec')}
-      >
-        <form onSubmit={selectCompanySubmit}>
-          <div className="space-y-4 p-4">
-            {companies.map((company) => (
-              <label key={company.id} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="selectedCompany"
-                  value={company.id}
-                  checked={selectedId === company.id}
-                  onChange={() => setSelectedId(company.id)}
-                  className="input-check"
+            {/* Área derecha */}
+            <div className="flex-1 flex flex-col min-w-0">
+                <Header
+                title={title}
+                subtitle={subtitle}
+                user={user}
+                actions={actions}
+                companies={companies}
+                current_company={currentCompany}
+                onToggleSidebar={() => setSidebarCollapsed(v => !v)}
+                onOpenMobile={() => setMobileSidebarOpen(true)}
                 />
-                <span className="text-sm">{company.name}</span>
-              </label>
-            ))}
-          </div>
-          <div className="flex justify-end px-4 py-2 bg-gray-50">
-            <button
-              type="submit"
-              className="btn btn-primary disabled:opacity-50"
-              disabled={processing}
+
+                {/* Contenido con scroll independiente */}
+                <main className="flex-1 overflow-y-auto p-6">
+                    {/* Mensajes */}
+                    <FlashMessage type="success" message={props.msg} />
+                    <FlashMessage type="danger" message={props.alert} />
+                    {/* <FlashMessage type="success" />
+                    <FlashMessage type="danger" /> */}
+                    {/* Si usas otros tipos: */}
+                    {/* <FlashMessage type="warning" /> */}
+                    {/* <FlashMessage type="info" /> */}
+
+                    {children}
+                </main>
+            </div>
+
+            {/* Modal selector de empresa */}
+            <ModalCompaniesSession
+                show={showModalCompaniesSession}
+                onClose={() => setShowModalCompaniesSession(false)}
+                onConfirm={selectCompanySubmit}
+                title={__('empresa_selec')}
             >
-              {processing ? __('enviando') : __('enviar')}
-            </button>
-          </div>
-        </form>
-      </ModalCompaniesSession>
-    </div>
-  );
+                <form onSubmit={selectCompanySubmit}>
+                <div className="space-y-4 p-4">
+                    {companies.map((company) => (
+                    <label key={company.id} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                        type="radio"
+                        name="selectedCompany"
+                        value={company.id}
+                        checked={selectedId === company.id}
+                        onChange={() => setSelectedId(company.id)}
+                        className="input-check"
+                        />
+                        <span className="text-sm">{company.name}</span>
+                    </label>
+                    ))}
+                </div>
+                <div className="flex justify-end px-4 py-2 bg-gray-50">
+                    <button
+                    type="submit"
+                    className="btn btn-primary disabled:opacity-50"
+                    disabled={processing}
+                    >
+                    {processing ? __('enviando') : __('enviar')}
+                    </button>
+                </div>
+                </form>
+            </ModalCompaniesSession>
+        </div>
+    );
 }

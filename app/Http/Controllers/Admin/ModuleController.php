@@ -249,12 +249,16 @@ class ModuleController extends Controller{
         //Niveles:
         $levels = $this->levels();
 
+        //Ambitos:
+        $scopes = $this->scopes();
+
         return Inertia::render('Admin/Module/Create', [
             "title" => __($this->option),
             "subtitle" => __('modulo_nuevo'),
             "module" => $this->module,
             "slug" => 'modules',
             "levels" => $levels,
+            "scopes" => $scopes,
             "availableLocales" => LocaleTrait::availableLocales(),
             "permissions" => $this->permissions
         ]);        
@@ -266,9 +270,6 @@ class ModuleController extends Controller{
     public function store(ModuleStoreRequest $request){
         //Guardando módulo:
         $module = Module::saveModule($request);      
-
-        //Guardar .json de módulos opcionales:
-        $this->jsonOptionalModules();  
 
         return redirect()->route('modules.edit', $module->id)
             ->with('msg', __('modulo_creado_msg'));
@@ -348,12 +349,7 @@ class ModuleController extends Controller{
      * 6. Eliminar módulo.
      */
     public function destroy(Request $request, Module $module){
-
-        dd($request->all(), $module);
         $module->delete();
-
-        //Guardar .json de módulos opcionales:
-        //$this->jsonOptionalModules();
 
         //Mantenimiento de filtros:
         $queryParams = $request->only([

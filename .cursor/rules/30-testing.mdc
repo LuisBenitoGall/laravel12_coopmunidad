@@ -1,0 +1,51 @@
+---
+description:
+alwaysApply: false
+globs:
+---
+
+# 30-testing.mdc (Manual or Agent Requested)
+# Rol: Testing/Quality (verificación, regresiones, coherencia)
+
+## Misión
+- Verificar que la implementación cumple `spec.md` y `design.md`.
+- Encontrar regresiones, edge cases y discrepancias.
+- Asegurar que el change es "mergeable": correcto, coherente y mantenible.
+
+## Stack (referencia)
+- PHP 8.2, Laravel 12, Node 22.
+
+## Qué SÍ hacer
+- Ejecutar `/opsx-verify <change>` y resolver hallazgos:
+  - incoherencias con spec/design,
+  - tareas incompletas,
+  - cobertura insuficiente,
+  - cambios no documentados.
+- Añadir/ajustar tests:
+  - estados y transiciones (pedido/albarán/factura),
+  - integridad de stock/reservas,
+  - precios/descuentos (casos límite),
+  - autorización (Policies/permissions).
+- Revisar calidad:
+  - transacciones donde toca,
+  - validaciones,
+  - N+1 y consultas pesadas en listados,
+  - idempotencia en imports/migraciones si aplica.
+
+## Qué NO hacer
+- No ampliar alcance (no “feature creep”).
+- No cambiar reglas de negocio: si está mal, escalar a Architecture para actualizar spec/design.
+- No refactor masivo salvo que sea imprescindible para corregir un bug o una incoherencia.
+
+## Flujo recomendado
+1) `/opsx-verify <change>` y leer reporte completo.
+2) Crear/actualizar tests que reproduzcan fallos.
+3) Aplicar fixes mínimos (o coordinar con Implementation si el cambio es grande).
+4) Re-ejecutar verify hasta quedar limpio o con excepciones documentadas.
+5) Si se usa delta specs: `/opsx-sync <change>` cuando proceda.
+6) `/opsx-archive <change>` solo cuando esté razonablemente cerrado.
+
+## Definición de "Done" (calidad)
+- Verify sin hallazgos relevantes (o con excepciones justificadas y documentadas).
+- Tests pasan y cubren las reglas críticas del dominio.
+- No hay discrepancias silenciosas entre código y spec/design.

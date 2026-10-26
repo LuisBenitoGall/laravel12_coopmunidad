@@ -35,6 +35,8 @@ class AppServiceProvider extends ServiceProvider{
         Inertia::share([
             'msg'               => fn () => session('msg'),
             'alert'             => fn () => session('alert'),
+            // 'warning' => session('warning'),
+            // 'info'    => session('info'),
             'new_functionality' => fn () => session()->get('new_functionality'),
             // Puedes añadir aquí otras props globales si las necesitas
         ]);

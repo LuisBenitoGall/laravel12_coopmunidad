@@ -1,0 +1,149 @@
+---
+description: Contexto global del Laravel 12 Coopmunidad
+alwaysApply: true
+globs:
+  - "app/**"
+  - "bootstrap/**"
+  - "config/**"
+  - "database/**"
+  - "resources/js/**"
+  - "resources/sass/**"
+  - "routes/**"
+  - "tests/**"
+  - "lang/**"
+  - "public/**"
+---
+
+# 00-project.mdc (Always)
+# Laravel 12 Coopmunidad - Reglas globales del repositorio
+
+## Propósito del sistema
+- ERP para empresa distribuidora de material de construcción: compras, ventas, almacén, logística, facturación, cobros/pagos, contabilidad básica y reporting.
+- Prioridades: consistencia de datos, trazabilidad, estabilidad, mantenibilidad.
+- Evitar “magia” difícil de depurar y soluciones demasiado creativas.
+
+## Stack y compatibilidad (obligatoria)
+- Backend: Laravel 12
+- PHP: **8.2**
+  - Se permite usar features de PHP 8.2 (match, promoted properties, union types, nullsafe, enums, readonly, etc.) cuando mejoren claridad.
+  - Evitar modernidades si empeoran legibilidad o complican debugging.
+- Frontend/build: **Node 22**
+  - No introducir tooling o dependencias que requieran otra versión distinta o rompan el build actual.
+- Frontend runtime: **Inertia + React + Bootstrap**
+  - No introducir librerías de estado/UI nuevas (Redux, Zustand, MUI, Tailwind, etc.) salvo que el spec lo pida explícitamente.
+
+## Convenciones de repositorio
+- Mantener estructura clara por dominios: Ventas, Compras, Almacén, Logística, Facturación, Tesorería, Contabilidad, Catálogo, ...
+- Nombres:
+  - Tablas: snake_case plural.
+  - Columnas FK: `<entidad>_id`.
+  - Modelos: PascalCase singular.
+  - Servicios: `*Service`, acciones: `*Action`, jobs: `*Job`, comandos: `*Command`.
+- No crear “helpers” globales salvo que sea imprescindible. Preferir servicios/Actions/Traits bien acotados.
+
+## Regla de oro: no inventar requisitos
+- Si una decisión de negocio no está especificada en spec/design/tasks: NO inventar.
+- Si hay ambigüedad:
+  - Proponer opciones (A/B) en el artefacto OpenSpec correspondiente (proposal/spec/design/tasks).
+  - Implementación estricta del camino elegido por los artefactos, sin rediseñar.
+
+## Multiempresa (core del ERP)
+- La empresa activa se establece por **session** y se puede cambiar mediante selector.
+- Muchas tablas incorporan `company_id`.
+- Cualquier lectura/escritura de datos de dominio debe respetar la empresa activa:
+  - Filtrar queries por `company_id` cuando aplique.
+  - Validar pertenencia (IDs recibidos del cliente incluidos) a la empresa activa.
+  - Evitar cualquier fuga cross-company en endpoints, policies, resources y relaciones.
+- Si una entidad puede ser “global” (sin company_id), debe estar explicitado por spec.
+
+## Dominio: supuestos operativos (para modelado y validación)
+- Catálogo:
+  - Productos con unidades: unidad, saco, palet, metro, etc. (posible conversión).
+  - Variantes: medidas, acabados, fabricante, etc. si aplica.
+  - Tarifas/condiciones: descuentos por cliente/obra.
+- Operativa:
+  - Pedidos -> albaranes/remisiones -> facturas.
+  - Stock por almacén; ubicaciones opcionales.
+  - Reservas/compromisos de stock para pedidos.
+  - Devoluciones y abonos.
+  - Portes/transporte y costes asociados.
+- Trazabilidad:
+  - Cualquier documento debe poder seguirse hacia delante y hacia atrás (pedido -> albarán -> factura; y viceversa).
+
+## Autorización y permisos (Spatie + Policies)
+- Autorización basada en roles/permisos con Spatie.
+- Nunca saltarse autorización en controllers:
+  - Usar Policies/Gates/Middleware según aplique.
+- Cada vez que se cree un nuevo **modelo de dominio**, considerar si necesita **Policy**:
+  - Si el acceso depende de reglas por instancia (empresa/obra/cliente/almacén), definir Policy.
+  - Si el acceso es “global” por permiso, basta con permisos/roles.
+- En multiempresa: Policies deben validar company_id (directo o vía relaciones).
+
+## Backend: patrones y límites
+- Controllers:
+  - Delgados. Orquestan, validan y delegan.
+  - Validación: Form Requests.
+  - Reglas de negocio: Services/Actions (no en controllers).
+- Eloquent:
+  - Evitar N+1 (eager loading).
+  - Relaciones coherentes con company_id (cuando aplique).
+  - Cuidado con mass assignment: `$fillable` o `$guarded` bien configurados en modelos.
+
+## UI (Inertia + React + Bootstrap)
+- Renders con Inertia (`Inertia::render`) y props explícitas.
+- Formularios:
+  - Validación servidor con FormRequest.
+  - Errores y flashes a través de Inertia.
+- Componentes:
+  - React + Bootstrap, siguiendo estilos y convenciones ya existentes del repo.
+  - Evitar introducir patrones nuevos si el repo ya tiene uno (p. ej. formas de tablas, filtros, modales).
+- Estado:
+  - Preferir state local / props.
+  - Persistencias (si aplica): localStorage solo cuando esté justificado y documentado por spec.
+
+## Base de datos, integridad y performance
+- Migraciones:
+  - Evitar cambios destructivos sin plan (drop/rename) en tablas con datos.
+  - Índices en FKs y campos de búsqueda frecuentes.
+- Consistencia:
+  - Preferir transacciones en operaciones multi-tabla (documentos, asientos, cierres).
+  - Validar estados (no permitir saltos inválidos si negocio no lo permite).
+- Reportes grandes:
+  - Paginar.
+  - Agregaciones en SQL.
+  - Cache si aplica y está justificado por spec.
+
+## Errores, logging y seguridad
+- Errores:
+  - Mensajes claros y trazables.
+  - No exponer detalles sensibles al cliente.
+- Logging:
+  - Loguear eventos relevantes (creación de documentos, cambios de estado, importaciones).
+- Seguridad:
+  - Nunca confiar en input del cliente.
+  - Validar/sanitizar IDs y pertenencia a empresa/instancia.
+  - Evitar queries sin scoping cuando aplica company_id.
+
+## Testing y calidad mínima
+- Cambios que toquen lógica de negocio:
+  - Añadir/ajustar tests (feature/unit según caso).
+- Mínimo antes de dar por “done”:
+  - Tests relevantes pasan.
+  - No hay errores obvios de lint/typecheck (si existen en el proyecto).
+  - No se rompe compatibilidad PHP 8.2 / Node 22.
+
+## Cómo deben trabajar los agentes
+- Architecture:
+  - Define contratos y artefactos OpenSpec (proposal/spec/design/tasks) y criterios Done.
+  - No implementa lógica compleja.
+- Implementation:
+  - Implementa estrictamente tasks/spec/design.
+  - No rediseña.
+  - Si detecta ambigüedad, la documenta y la devuelve a Architecture.
+- Testing:
+  - Verifica edge cases, añade tests y valida coherencia con spec.
+
+## Comunicación en commits/PRs (si aplica)
+- Commits descriptivos por unidad de trabajo.
+- Evitar commits “wip” largos sin explicación.
+- En PR: describir impacto en dominio (ventas/almacén/facturación), migraciones si hay, y riesgos.

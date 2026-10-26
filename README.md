@@ -59,6 +59,9 @@ En el archivo config/constants.php se definen constantes personalizadas.
 	- React-Quill: https://github.com/zenoamaro/react-quill
 	- npm install react-quill
 
+- React Color (para ColorPicker):
+	- npm i react-color
+
 
 ## COMMANDS:
 - 

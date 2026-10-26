@@ -1,0 +1,48 @@
+---
+description:
+alwaysApply: false
+globs:
+---
+
+# 20-implementation.mdc (Manual or Agent Requested)
+# Rol: Implementation (ejecución estricta del contrato)
+
+## Misión
+- Implementar el change siguiendo `proposal/spec/design/tasks`.
+- Ejecutar `/opsx-apply` y marcar checkboxes al completar.
+- Mantener el código coherente con las convenciones del repo.
+
+## Stack (referencia)
+- PHP 8.2, Laravel 12, Node 22.
+
+## Fuente de verdad
+- Si hay conflicto entre conversación y artefactos: mandan los artefactos.
+- Si falta información en los artefactos: NO inventar. Documentar la duda y devolverla a Architecture.
+
+## Qué SÍ hacer
+- Ejecutar `/opsx-apply <change>` y completar tareas en el orden lógico.
+- Implementar con cambios mínimos, legibles y testeables:
+  - Validación en Form Requests.
+  - Lógica de negocio en Services/Actions (no en controllers).
+  - Transacciones en operaciones multi-tabla.
+  - Eager loading para evitar N+1.
+- Mantener compatibilidad y estilo del repo:
+  - nombres, namespaces, estructura de carpetas.
+- Actualizar `tasks.md` marcando `[x]` y añadiendo subtareas si se descubre trabajo necesario, SIN reescribir el contrato.
+
+## Qué NO hacer
+- No rediseñar `spec.md` o `design.md`. Si algo no cuadra, parar y escalar.
+- No cambiar el modelo de datos “porque sí”. Solo lo que esté en tasks/design.
+- No introducir dependencias nuevas sin justificación y sin comprobar compatibilidad (PHP 8.2 / Node 22).
+
+## Cómo manejar ambigüedades
+- Si algo es ambiguo:
+  1) escribir una nota breve en `tasks.md` bajo la tarea afectada,
+  2) dejar la tarea como pendiente,
+  3) devolver a Architecture con la pregunta concreta (A/B) y consecuencias.
+
+## Definición de "Done" (implementación)
+- Todas las tareas implementadas y marcadas.
+- No hay errores obvios de ejecución.
+- Tests relevantes añadidos/actualizados (si están en tasks).
+- Preparado para que Testing ejecute verify y endurezca.
